@@ -2,17 +2,15 @@ using UnityEngine;
 
 public class ManualSpawner : MonoBehaviour
 {
-    public GameObject[] colorBlocks;   // Red, Yellow, Blue, Green
-    public Transform spawnPoint;       // SpawnPoint objesi
-    public float moveSpeed = 5f;       // sağ-sol hız
+    public GameObject redBlock;
+    public GameObject yellowBlock;
+    public Transform spawnPoint;
 
     GameObject currentBlock;
     Rigidbody2D currentRb;
-    bool isFalling = false;
 
     void Update()
     {
-        // SPAWN / DROP
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (currentBlock == null)
@@ -21,52 +19,27 @@ public class ManualSpawner : MonoBehaviour
                 Drop();
         }
 
-        // SAĞA - SOLA HAREKET (sadece havadayken)
-        if (currentBlock != null && !isFalling)
+        if (currentBlock != null)
         {
-            float move = Input.GetAxisRaw("Horizontal"); // A-D / ← →
-            if (move != 0)
-            {
-                currentBlock.transform.position +=
-                    new Vector3(move * moveSpeed * Time.deltaTime, 0f, 0f);
-            }
+            float h = Input.GetAxisRaw("Horizontal");
+            currentBlock.transform.position += new Vector3(h * 5f * Time.deltaTime, 0, 0);
         }
     }
 
     void Spawn()
     {
-        if (colorBlocks.Length == 0 || spawnPoint == null)
-        {
-            Debug.LogError("ColorBlocks veya SpawnPoint eksik!");
-            return;
-        }
+        GameObject prefab = Random.Range(0, 2) == 0 ? redBlock : yellowBlock;
 
-        int rand = Random.Range(0, colorBlocks.Length);
-        currentBlock = Instantiate(
-            colorBlocks[rand],
-            spawnPoint.position,
-            Quaternion.identity
-        );
-
+        currentBlock = Instantiate(prefab, spawnPoint.position, Quaternion.identity);
         currentRb = currentBlock.GetComponent<Rigidbody2D>();
 
-        if (currentRb != null)
-        {
-            currentRb.gravityScale = 0f;              // havada
-            currentRb.linearVelocity = Vector2.zero;
-        }
-
-        isFalling = false;
+        currentRb.gravityScale = 0f;
+        currentRb.linearVelocity = Vector2.zero;
     }
 
     void Drop()
     {
-        if (currentRb != null)
-        {
-            currentRb.gravityScale = 2f; // düş ⬇️
-        }
-
-        isFalling = true;
+        currentRb.gravityScale = 2f;
         currentBlock = null;
         currentRb = null;
     }
